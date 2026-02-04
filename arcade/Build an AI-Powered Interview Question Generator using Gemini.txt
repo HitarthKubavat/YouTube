@@ -1,0 +1,40 @@
+import vertexai
+from vertexai.generative_models import GenerativeModel
+
+# --- CONFIGURATION SETTINGS ---
+MY_PROJECT_ID = "YOUR_PROJECT_ID_HERE"  
+MY_LOCATION = "us-central1"            
+MODEL_ID = "gemini-1.5-flash"         
+# ------------------------------
+
+def interview(prompt):
+    """
+    Invokes the Vertex AI model using the supplied prompt 
+    and returns the generated response.
+    """
+    # Initialize the Vertex AI environment
+    vertexai.init(project=MY_PROJECT_ID, location=MY_LOCATION)
+    
+    # Load the generative model
+    model = GenerativeModel(MODEL_ID)
+    
+    try:
+        # Generate content based on the prompt
+        response = model.generate_content(prompt)
+        
+        # Return the text portion of the response
+        return response.text
+    
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
+
+# --- CHALLENGE EXECUTION ---
+if __name__ == "__main__":
+    challenge_prompt = "Give me ten interview questions for the role of program manager."
+    
+    print(f"🤖 Querying {MODEL_ID}...\n")
+    
+    result = interview(challenge_prompt)
+    
+    print("--- Interview Questions ---")
+    print(result)
