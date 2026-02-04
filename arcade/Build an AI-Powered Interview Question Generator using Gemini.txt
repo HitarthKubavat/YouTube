@@ -1,40 +1,39 @@
 import vertexai
-from vertexai.generative_models import GenerativeModel
+from vertexai.generative_models import GenerativeModel as AIModel
+from typing import Final
 
 # --- CONFIGURATION SETTINGS ---
-MY_PROJECT_ID = "YOUR_PROJECT_ID_HERE"  
-MY_LOCATION = "us-central1"            
-MODEL_ID = "gemini-1.5-flash"         
+PROJECT_ID: Final[str] = "PASTE_ID_HERE"
+LOCATION: Final[str] = "PASTE_REGION_HERE"
+MODEL_NAME: Final[str] = "gemini-2.5-flash-lite"
 # ------------------------------
 
-def interview(prompt):
-    """
-    Invokes the Vertex AI model using the supplied prompt 
-    and returns the generated response.
-    """
-    # Initialize the Vertex AI environment
-    vertexai.init(project=MY_PROJECT_ID, location=MY_LOCATION)
-    
-    # Load the generative model
-    model = GenerativeModel(MODEL_ID)
-    
-    try:
-        # Generate content based on the prompt
-        response = model.generate_content(prompt)
-        
-        # Return the text portion of the response
-        return response.text
-    
-    except Exception as e:
-        return f"An error occurred: {str(e)}"
+class InterviewConsultant:
+    def __init__(self):
+        """Prepares the Vertex AI connection using global config."""
+        vertexai.init(project=PROJECT_ID, location=LOCATION)
+        self.generator = AIModel(MODEL_NAME)
 
-# --- CHALLENGE EXECUTION ---
+    def fetch_answer(self, query_text: str) -> str:
+        """Triggers the model to produce a text-based response."""
+        execution = self.generator.generate_content(query_text)
+        return execution.text
+
+def run_interface():
+    # Setup visual constants
+    border = "*" * 65
+    fallback_prompt = "Give me ten interview questions for the role of program manager."
+
+    # Capture user input
+    user_entry = input("Input your prompt (Enter for default): ").strip()
+    active_prompt = user_entry or fallback_prompt
+
+    # Initialize and execute
+    consultant = InterviewConsultant()
+    
+    print(f"\n{border}\nGENERATED CONTENT:\n")
+    print(consultant.fetch_answer(active_prompt))
+    print(f"\n{border}")
+
 if __name__ == "__main__":
-    challenge_prompt = "Give me ten interview questions for the role of program manager."
-    
-    print(f"🤖 Querying {MODEL_ID}...\n")
-    
-    result = interview(challenge_prompt)
-    
-    print("--- Interview Questions ---")
-    print(result)
+    run_interface()
