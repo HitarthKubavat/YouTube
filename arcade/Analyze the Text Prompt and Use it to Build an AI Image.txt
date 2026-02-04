@@ -1,0 +1,75 @@
+import os
+import base64
+import google.auth
+from google.auth.transport.requests import AuthorizedSession
+
+# --- CONFIGURATION SETTINGS ---
+MY_PROJECT_ID = "YOUR_PROJECT_ID_HERE"  
+MY_LOCATION = "YOUR_LOCATION_HERE"            
+# ------------------------------
+
+class ImagenClient:
+    """A client to interact with Google Cloud's Imagen 3.0 API."""
+    
+    def __init__(self, project_id: str, location: str):
+        self.project_id = project_id
+        self.location = location
+        self.base_url = (
+            f"https://{location}-aiplatform.googleapis.com/v1/"
+            f"projects/{project_id}/locations/{location}/"
+            f"publishers/google/models/imagen-3.0-generate-002:predict"
+        )
+        self.session = self._create_session()
+
+    def _create_session(self):
+        """Initializes the authorized Google session."""
+        scopes = ['https://www.googleapis.com/auth/cloud-platform']
+        credentials, _ = google.auth.default(scopes=scopes)
+        return AuthorizedSession(credentials)
+
+    def create_visual(self, description: str, output_file: str = "output.png"):
+        """Sends a request to generate an image based on a description."""
+        
+        request_body = {
+            "instances": [{"prompt": description}],
+            "parameters": {
+                "sampleCount": 1,
+                "aspectRatio": "1:1",
+                "personGeneration": "dont_allow",
+                "safetyFilterLevel": "block_some",
+                "addWatermark": True
+            }
+        }
+
+        try:
+            resp = self.session.post(self.base_url, json=request_body)
+            resp.raise_for_status()
+            
+            data = resp.json()
+            prediction = data.get("predictions", [{}])[0]
+            
+            if "bytesBase64Encoded" in prediction:
+                raw_image = base64.b64decode(prediction["bytesBase64Encoded"])
+                with open(output_file, "wb") as image_file:
+                    image_file.write(raw_image)
+                
+                return {"status": "success", "file": output_file}
+            
+            return {"status": "error", "message": "No image data found"}
+
+        except Exception as err:
+            return {"status": "error", "message": str(err)}
+
+if __name__ == "__main__":
+    # Using the variables defined at the top
+    client = ImagenClient(project_id=MY_PROJECT_ID, location=MY_LOCATION)
+    
+    user_prompt = "A cricket ground in the heart of Los Angeles"
+    
+    print(f"🎬 Initiating generation in {MY_LOCATION} for: {user_prompt}")
+    outcome = client.create_visual(user_prompt, "la_cricket.png")
+    
+    if outcome["status"] == "success":
+        print(f"✨ Success! Saved to {outcome['file']}")
+    else:
+        print(f"⚠️ Failed: {outcome['message']}")
