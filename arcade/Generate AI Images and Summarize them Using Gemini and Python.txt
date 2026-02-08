@@ -1,46 +1,69 @@
 import vertexai
-from vertexai.generative_models import GenerativeModel
+from vertexai.preview.vision_models import ImageGenerationModel as ImageGen
+from vertexai.generative_models import GenerativeModel as VisionModel, Part
 
-# ==========================================
-# CLOUD CONFIGURATION
-# ==========================================
-GCP_PROJECT: str = "PASTE_ID_HERE"
-GCP_REGION: str = "PASTE_REGION_HERE"
-MODEL_ID: str = "gemini-2.5-flash-lite"
-# ==========================================
+# --- ENVIRONMENT CONFIGURATION ---
+GCP_PROJECT_ID = "PASTE_ID_HERE"
+GCP_REGION = "PASTE_REGION_HERE"
+IMAGEN_VERSION = "imagen-4.0-generate-001"
+GEMINI_VERSION = "gemini-2.5-flash"
+# ---------------------------------
 
-def initialize_service():
-    """Establishes connection to Vertex AI."""
-    vertexai.init(project=GCP_PROJECT, location=GCP_REGION)
-    return GenerativeModel(MODEL_ID)
+class BouquetProcessor:
+    def __init__(self):
+        """Initialize the Google Cloud Vertex AI environment."""
+        vertexai.init(project=GCP_PROJECT_ID, location=GCP_REGION)
+        self.output_filename = "bouquet_snapshot.jpeg"
 
-def execute_chat_query(model_instance, user_input):
-    """Handles the communication with the LLM."""
-    try:
-        call_result = model_instance.generate_content(user_input)
-        return call_result.text
-    except Exception as error:
-        return f"An error occurred: {error}"
+    def produce_floral_visual(self, description: str) -> str:
+        """Triggers the Image Generation model to create a bouquet."""
+        engine = ImageGen.from_pretrained(IMAGEN_VERSION)
+        
+        # Request a single image generation
+        collection = engine.generate_images(
+            prompt=description,
+            number_of_images=1
+        )
 
-def start_application():
-    """Main entry point for the script."""
-    # Define UI elements
-    separator = "::" * 30
-    default_text = "Give me ten interview questions for the role of program manager."
+        collection[0].save(self.output_filename)
+        print(f"Success: Visual asset stored at {self.output_filename}")
+        return self.output_filename
 
-    # Process Input
-    print("--- AI Interview Assistant ---")
-    raw_text = input("Provide a prompt [or press Enter for default]: ").strip()
-    final_query = raw_text if raw_text else default_text
+    def interpret_and_greet(self, local_path: str):
+        """Uses computer vision to analyze the image and draft a message."""
+        analyzer = VisionModel(GEMINI_VERSION)
 
-    # Startup and Logic
-    llm_node = initialize_service()
-    response_payload = execute_chat_query(llm_node, final_query)
+        # Load file into memory as binary data
+        with open(local_path, "rb") as image_file:
+            blob = image_file.read()
 
-    # Output Formatting
-    print(f"\n{separator}")
-    print(f"SYSTEM RESPONSE:\n\n{response_payload}")
-    print(f"{separator}\n")
+        # Prepare multimodal payload
+        visual_data = Part.from_data(data=blob, mime_type="image/jpeg")
+        instruction = (
+            "Examine the floral arrangement in this image. "
+            "Compose a brief, thoughtful birthday greeting inspired by these specific flowers."
+        )
+
+        # Execute non-streaming inference
+        inference = analyzer.generate_content(
+            [instruction, visual_data],
+            stream=False
+        )
+
+        print("\n--- AI-Generated Greeting ---")
+        print(inference.text)
+        print("-" * 30)
+
+def main():
+    # Define the creative brief
+    floral_brief = "Create an image containing a bouquet of 2 sunflowers and 3 roses"
+    
+    # Initialize the worker
+    worker = BouquetProcessor()
+    
+    # Execute Pipeline
+    saved_file = worker.produce_floral_visual(floral_brief)
+    worker.interpret_and_greet(saved_file)
 
 if __name__ == "__main__":
-    start_application()
+    main()
