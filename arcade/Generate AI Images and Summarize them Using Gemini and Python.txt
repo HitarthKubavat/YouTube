@@ -1,0 +1,46 @@
+import vertexai
+from vertexai.generative_models import GenerativeModel
+
+# ==========================================
+# CLOUD CONFIGURATION
+# ==========================================
+GCP_PROJECT: str = "PASTE_ID_HERE"
+GCP_REGION: str = "PASTE_REGION_HERE"
+MODEL_ID: str = "gemini-2.5-flash-lite"
+# ==========================================
+
+def initialize_service():
+    """Establishes connection to Vertex AI."""
+    vertexai.init(project=GCP_PROJECT, location=GCP_REGION)
+    return GenerativeModel(MODEL_ID)
+
+def execute_chat_query(model_instance, user_input):
+    """Handles the communication with the LLM."""
+    try:
+        call_result = model_instance.generate_content(user_input)
+        return call_result.text
+    except Exception as error:
+        return f"An error occurred: {error}"
+
+def start_application():
+    """Main entry point for the script."""
+    # Define UI elements
+    separator = "::" * 30
+    default_text = "Give me ten interview questions for the role of program manager."
+
+    # Process Input
+    print("--- AI Interview Assistant ---")
+    raw_text = input("Provide a prompt [or press Enter for default]: ").strip()
+    final_query = raw_text if raw_text else default_text
+
+    # Startup and Logic
+    llm_node = initialize_service()
+    response_payload = execute_chat_query(llm_node, final_query)
+
+    # Output Formatting
+    print(f"\n{separator}")
+    print(f"SYSTEM RESPONSE:\n\n{response_payload}")
+    print(f"{separator}\n")
+
+if __name__ == "__main__":
+    start_application()
