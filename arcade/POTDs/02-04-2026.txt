@@ -1,0 +1,17 @@
+#include <iostream>
+#include <unordered_map>
+using namespace std;
+unordered_map<int, int> dp;
+
+int Maximum(int N) {
+    if (N == 0) return 0;
+
+    if (dp.count(N))
+        return dp[N];
+
+    int a = N;
+    int s = Maximum(N / 2) + Maximum(N / 3) + Maximum(N / 4);
+
+    dp[N] = max(a, s);
+    return dp[N];
+}
