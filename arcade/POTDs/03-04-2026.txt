@@ -1,0 +1,53 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+
+using namespace std;
+
+int min_treasure(vector<vector<int>>& grid) {
+    int n = grid.size();
+    
+    vector<int> prev(n), curr(n);
+    
+
+    for (int i = 0; i < n; i++) {
+        prev[i] = grid[0][i];
+    }
+    
+
+    for (int i = 1; i < n; i++) {
+        int min1 = INT_MAX, min2 = INT_MAX;
+        int min1_col = -1;
+        
+
+        for (int j = 0; j < n; j++) {
+            if (prev[j] < min1) {
+                min2 = min1;
+                min1 = prev[j];
+                min1_col = j;
+            } else if (prev[j] < min2) {
+                min2 = prev[j];
+            }
+        }
+        
+
+        for (int j = 0; j < n; j++) {
+            if (j == min1_col) {
+                curr[j] = grid[i][j] + min2;
+            } else {
+                curr[j] = grid[i][j] + min1;
+            }
+        }
+        
+
+        prev = curr;
+    }
+    
+
+    int ans = INT_MAX;
+    for (int j = 0; j < n; j++) {
+        ans = min(ans, prev[j]);
+    }
+    
+    return ans;
+}
