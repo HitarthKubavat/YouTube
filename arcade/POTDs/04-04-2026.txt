@@ -3,7 +3,7 @@
 #include <vector>
 using namespace std;
 
-int minimum_sum(int N) {
+int minimum_product(int N) {
 
     vector<int> numbers;
     while (N > 0) {
