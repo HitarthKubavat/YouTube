@@ -1,0 +1,46 @@
+#include <iostream>
+#include <vector>
+using namespace std;
+
+
+bool chkPrime(int no) {
+    if (no <= 1) return false;
+    if (no == 2) return true;
+    if (no % 2 == 0) return false;
+
+    for (int i = 3; i * i <= no; i += 2) {
+        if (no % i == 0)
+            return false;
+    }
+    return true;
+}
+
+void zigzag_traversal(int M, int N, vector<vector<int>>& grid) {
+    vector<int> ans;
+
+    for (int i = 0; i < M; ++i) {
+        // Left to Right
+        if (i % 2 == 0) {
+            for (int j = 0; j < N; ++j) {
+                if (!chkPrime(grid[i][j])) {
+                    ans.push_back(grid[i][j]);
+                }
+            }
+        }
+        else {
+            for (int j = N - 1; j >= 0; --j) {
+                if (!chkPrime(grid[i][j])) {
+                    ans.push_back(grid[i][j]);
+                }
+            }
+        }
+    }
+
+    if (ans.empty()) {
+        cout << -1;
+    } else {
+        for (int x : ans) {
+            cout << x << " ";
+        }
+    }
+}
