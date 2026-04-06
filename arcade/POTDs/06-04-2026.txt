@@ -3,20 +3,13 @@
 using namespace std;
 
 int user_logic(int n, string s) {
-    string tmp = "";
+    int count = 0;
 
-    for (int i = 0; i < n; i++) {
-        tmp.push_back(s[i]);
-
-        if (tmp.size() >= 4) {
-            int size = tmp.size();
-            if (tmp[size - 4] == 'k' && tmp[size - 3] == 'i' && tmp[size - 2] == 'l' && tmp[size - 1] == 'l') {
-                tmp.pop_back();
-                tmp.pop_back();
-                tmp.pop_back();
-                tmp.pop_back();
-            }
+    for (int i = 0; i <= n - 4; i++) {
+        if (s[i] == 'k' && s[i + 1] == 'i' && s[i + 2] == 'l' && s[i + 3] == 'l') {
+            
+            count++;
         }
     }
-    return tmp.size();
+    return n - count;
 }
