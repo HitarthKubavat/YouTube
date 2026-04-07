@@ -1,0 +1,32 @@
+#include <iostream>
+#include <vector>
+
+std::string decide_division(int n, const std::vector<int>& bundles) {
+    int total = 0;
+    
+    for (int i = 0; i < n; i++) {
+        total += bundles[i];
+    }
+    
+    
+    if (total % 2 != 0) {
+        return "phoenix";
+    }
+    
+    int tmp = total / 2;
+    
+    std::vector<bool> v1(tmp + 1, false);
+    v1[0] = true;
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = tmp; j >= bundles[i]; j--) {
+            v1[j] = v1[j] || v1[j - bundles[i]];
+        }
+    }
+    
+    if (v1[tmp]) {
+        return "partners";
+    } else {
+        return "phoenix";
+    }
+}
