@@ -1,14 +1,13 @@
 #include <iostream>
 #include <string>
 #include <algorithm>
+
 using namespace std;
 
-bool check(const string &S, const string &T) {
+bool isSubsequence(const string &S, const string &T) {
     int j = 0;
     for (int i = 0; i < S.size() && j < T.size(); i++) {
-        if (S[i] == T[j]) {
-            j++;
-        }
+        if (S[i] == T[j]) j++;
     }
     return j == T.size();
 }
@@ -16,21 +15,18 @@ bool check(const string &S, const string &T) {
 int find_smallest_day(string S, string T) {
     string curr = S;
     int day = 1;
-    
+
     while (true) {
-        if (check(curr, T)) {
-            return day;
+        if (isSubsequence(curr, T)) return day;
+
+        string rev = curr;
+        reverse(rev.begin(), rev.end());
+        curr = rev + S;
+        if (curr.size() > 4000) {
+            curr = curr.substr(0, 2000) + curr.substr(curr.size() - 2000);
         }
-        string temp = curr;
-        temperse(temp.begin(), temp.end());
-        curr = temp + S;
-        if (curr.size() > 2 * T.size()) {
-            curr = curr.substr(0, 2 * T.size());
-        }
-        
         day++;
         if (day > 2000) break;
     }
-    
     return -1;
 }
