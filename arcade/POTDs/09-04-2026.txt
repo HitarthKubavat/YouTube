@@ -1,0 +1,26 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int countValidPartitions(vector<int>& E, int N) {
+    vector<long long> tmp(N + 1, 0);
+
+    for (int i = 0; i < N; i++) {
+        tmp[i + 1] = tmp[i] + E[i];
+    }
+
+    long long total = tmp[N];
+    int count = 0;
+
+    for (int k = 1; 2 * k < N; k++) {
+        long long alpha = tmp[k];
+        long long gamma = tmp[N] - tmp[N - k];
+        long long beta = total - alpha - gamma;
+        if (alpha + gamma > beta) {
+            count++;
+        }
+    }
+
+    return count;
+}
