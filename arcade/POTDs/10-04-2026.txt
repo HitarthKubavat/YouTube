@@ -1,0 +1,51 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <string>
+
+using namespace std;
+
+void validate_password(const vector<int>& password, string& result, int& most_frequent_element) {
+    unordered_map<int, int> frequency;
+
+    for (int no : password) {
+        frequency[no]++;
+    }
+
+    bool onlyEven = true;
+    bool same = false;
+
+    int maxFreq = 0;
+    int minWithMax = 0;
+
+    for (auto &p : frequency) {
+        int element = p.first;
+        int count = p.second;
+
+        if (count % 2 != 0) {
+            onlyEven = false;
+        }
+
+        if (count == 2) {
+            same = true;
+        }
+
+        if (count > maxFreq) {
+            maxFreq = count;
+            minWithMax = element;
+        } 
+        else if (count == maxFreq) {
+            if (element < minWithMax) {
+                minWithMax = element;
+            }
+        }
+    }
+
+    if (onlyEven && same) {
+        result = "VALID";
+    } else {
+        result = "INVALID";
+    }
+
+    most_frequent_element = minWithMax;
+}
