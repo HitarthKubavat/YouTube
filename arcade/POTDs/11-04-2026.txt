@@ -1,0 +1,24 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int maxRoomsCleaned(int N, int E, vector<int>& dirtLevels) {
+    int max = 0;
+    int total = 0;
+
+    for (int i = 0; i < N; i++) {
+        total += dirtLevels[i];
+        int cost = 2 * i;
+        int totalCost = total + cost;
+
+        if (totalCost <= E) {
+            max = i + 1;
+        } 
+        else {
+            break;
+        }
+    }
+
+    return max;
+}
