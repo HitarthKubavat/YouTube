@@ -1,0 +1,93 @@
+#include <cmath>
+#include <cstdio>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <queue>
+#include <tuple>
+#include <climits>
+using namespace std;
+
+typedef long long ll;
+
+struct Edge {
+    int to;
+    int normal;
+    int quantum;
+};
+
+int main() {
+    int a, b, c;
+    cin >> a >> b >> c;
+
+    vector<int> cost(a);
+    for (int i = 0; i < a; i++) {
+        cin >> cost[i];
+    }
+
+    vector<vector<Edge>> adj(a);
+
+    for (int i = 0; i < b; i++) {
+        int u, v, normal, quantum;
+        cin >> u >> v >> normal >> quantum;
+
+        adj[u].push_back({v, normal, quantum});
+        adj[v].push_back({u, normal, quantum});
+    }
+
+    vector<vector<vector<ll>>> dis(a, vector<vector<ll>>(2, vector<ll>(c + 1, LLONG_MAX)));
+
+    priority_queue<tuple<ll,int,int,int>, vector<tuple<ll,int,int,int>>, greater<>> q;
+
+    dis[0][0][0] = 0;
+    q.push({0, 0, 0, 0});
+
+    while (!q.empty()) {
+        auto [curr_cost, node, mode, count] = q.top();
+        q.pop();
+
+        if (curr_cost > dis[node][mode][count]) continue;
+
+        int new_mode = 1 - mode;
+        ll new_cost = curr_cost + cost[node];
+
+        if (dis[node][new_mode][0] > new_cost) {
+            dis[node][new_mode][0] = new_cost;
+            q.push({new_cost, node, new_mode, 0});
+        }
+
+        for (auto &e : adj[node]) {
+            int next = e.to;
+
+            if (mode == 0) {
+                ll new_c = curr_cost + e.normal;
+                if (dis[next][0][0] > new_c) {
+                    dis[next][0][0] = new_c;
+                    q.push({new_c, next, 0, 0});
+                }
+            }
+            else {
+                if (count < c) {
+                    ll new_c = curr_cost + e.quantum;
+                    if (dis[next][1][count + 1] > new_c) {
+                        dis[next][1][count + 1] = new_c;
+                        q.push({new_c, next, 1, count + 1});
+                    }
+                }
+            }
+        }
+    }
+
+    ll ans = LLONG_MAX;
+
+    for (int mode = 0; mode < 2; mode++) {
+        for (int count = 0; count <= c; count++) {
+            ans = min(ans, dis[a - 1][mode][count]);
+        }
+    }
+
+    if (ans == LLONG_MAX) cout << -1 << endl;
+    else cout << ans << endl;
+
+    return 0;
+}
