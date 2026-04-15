@@ -1,0 +1,21 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <tuple>
+
+using namespace std;
+
+void processLicenseData(int N, int C, vector<tuple<int, int, int, int>>& people, vector<int>& newLicenses, vector<int>& renewals) {
+    for (int i = 0; i < N; i++) {
+        int id, age, experience, year;
+        tie(id, age, experience, year) = people[i];
+
+        if (age >= 18 && experience >= 1 && year == 0) {
+            newLicenses.push_back(id);
+        }
+
+        if (year != 0 && (C - year > 5)) {
+            renewals.push_back(id);
+        }
+    }
+}
