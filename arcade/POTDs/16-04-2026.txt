@@ -1,50 +1,72 @@
-#include <iostream>
-#include <vector>
-using namespace std;
+import java.io.*;
+import java.util.*;
+import java.text.*;
+import java.math.*;
+import java.util.regex.*;
 
-const int MOD = 1000000007;
+class Main {
 
-vector<vector<int>> adj;
-int totalArchitects = 0;
-long long result = 1;
+    static final long MOD = 1000000007;
 
-int dfs(int node, int parent, vector<int>& roles) {
-    int count = roles[node];
+    static List<List<Integer>> adj;
+    static int[] roles;
+    static long answer = 1;
 
-    for (int neighbor : adj[node]) {
-        if (neighbor == parent) continue;
+    static int dfs(int node, int parent) {
+        int count = roles[node];
 
-        int sub = dfs(neighbor, node, roles);
+        for (int child : adj.get(node)) {
+            if (child == parent) continue;
 
-        if (sub == 1) {
-            result = (result * 1) % MOD;
+            int sub = dfs(child, node);
+
+            if (sub > 0) {
+                answer = (answer * sub) % MOD;
+            }
+
+            count += sub;
         }
 
-        count += sub;
+        return count;
     }
 
-    return count;
-}
+    public static void main(String[] args) throws Exception {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        StringTokenizer st;
 
-int calculate_valid_ways(int N, vector<int>& roles, vector<pair<int, int>>& connections) {
-    
-    adj.assign(N, vector<int>());
+        int N = Integer.parseInt(br.readLine());
 
-    for (auto &edge : connections) {
-        adj[edge.first].push_back(edge.second);
-        adj[edge.second].push_back(edge.first);
+        roles = new int[N];
+        st = new StringTokenizer(br.readLine());
+        for (int i = 0; i < N; i++) {
+            roles[i] = Integer.parseInt(st.nextToken());
+        }
+
+        adj = new ArrayList<>();
+        for (int i = 0; i < N; i++) {
+            adj.add(new ArrayList<>());
+        }
+
+        for (int i = 0; i < N - 1; i++) {
+            st = new StringTokenizer(br.readLine());
+            int u = Integer.parseInt(st.nextToken());
+            int v = Integer.parseInt(st.nextToken());
+
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+
+        int total = 0;
+        for (int x : roles) total += x;
+
+        if (total == 1) {
+            System.out.println(1);
+            return;
+        }
+
+        answer = 1;
+        dfs(0, -1);
+
+        System.out.println(answer % MOD);
     }
-
-    totalArchitects = 0;
-    for (int x : roles) {
-        if (x == 1) totalArchitects++;
-    }
-
-    if (totalArchitects == 1) return 1;
-
-    result = 1;
-
-    dfs(0, -1, roles);
-
-    return result % MOD;
 }
