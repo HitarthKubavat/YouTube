@@ -1,72 +1,62 @@
 import java.io.*;
 import java.util.*;
-import java.text.*;
-import java.math.*;
-import java.util.regex.*;
 
-class Main {
-
-    static final long MOD = 1000000007;
-
+public class Main {
+    static final int MOD = 1000000007;
     static List<List<Integer>> adj;
     static int[] roles;
-    static long answer = 1;
+    static long[][] dp;
 
-    static int dfs(int node, int parent) {
-        int count = roles[node];
-
-        for (int child : adj.get(node)) {
-            if (child == parent) continue;
-
-            int sub = dfs(child, node);
-
-            if (sub > 0) {
-                answer = (answer * sub) % MOD;
-            }
-
-            count += sub;
-        }
-
-        return count;
-    }
-
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st;
-
-        int N = Integer.parseInt(br.readLine());
-
-        roles = new int[N];
-        st = new StringTokenizer(br.readLine());
-        for (int i = 0; i < N; i++) {
-            roles[i] = Integer.parseInt(st.nextToken());
+        String line = br.readLine();
+        if (line == null) return;
+        int n = Integer.parseInt(line.trim());
+        
+        roles = new int[n];
+        String[] roleInput = br.readLine().trim().split("\\s+");
+        for (int i = 0; i < n; i++) {
+            roles[i] = Integer.parseInt(roleInput[i]);
         }
 
-        adj = new ArrayList<>();
-        for (int i = 0; i < N; i++) {
-            adj.add(new ArrayList<>());
-        }
+        adj = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());
 
-        for (int i = 0; i < N - 1; i++) {
-            st = new StringTokenizer(br.readLine());
-            int u = Integer.parseInt(st.nextToken());
-            int v = Integer.parseInt(st.nextToken());
-
+        for (int i = 0; i < n - 1; i++) {
+            String edgeLine = br.readLine();
+            if (edgeLine == null) break;
+            String[] edge = edgeLine.trim().split("\\s+");
+            int u = Integer.parseInt(edge[0]);
+            int v = Integer.parseInt(edge[1]);
             adj.get(u).add(v);
             adj.get(v).add(u);
         }
 
-        int total = 0;
-        for (int x : roles) total += x;
-
-        if (total == 1) {
-            System.out.println(1);
-            return;
-        }
-
-        answer = 1;
+        dp = new long[n][2];
         dfs(0, -1);
 
-        System.out.println(answer % MOD);
+        System.out.println(dp[0][1]);
+    }
+
+    static void dfs(int u, int p) {
+        if (roles[u] == 1) {
+            dp[u][0] = 0;
+            dp[u][1] = 1;
+        } else {
+            dp[u][0] = 1;
+            dp[u][1] = 0;
+        }
+
+        for (int v : adj.get(u)) {
+            if (v == p) continue;
+            dfs(v, u);
+
+            long nextZero = (dp[u][0] * (dp[v][0] + dp[v][1])) % MOD;
+            long nextOne = (dp[u][1] * (dp[v][0] + dp[v][1])) % MOD;
+            nextOne = (nextOne + (dp[u][0] * dp[v][1])) % MOD;
+
+            dp[u][0] = nextZero;
+            dp[u][1] = nextOne;
+        }
     }
 }
