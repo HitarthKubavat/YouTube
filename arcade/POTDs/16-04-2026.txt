@@ -1,79 +1,67 @@
-#include <cmath>
-#include <cstdio>
-#include <vector>
 #include <iostream>
-#include <algorithm>
+#include <vector>
 using namespace std;
 
-const long long MOD = 1e9 + 7;
+const int MOD = 1000000007;
 
-int N;
-vector<int> role;
 vector<vector<int>> adj;
 long long result = 1;
 
-int dfs(int node, int parent) {
-    int architects = role[node];
+int dfs(int node, int parent, vector<int>& roles) {
+    int sum = roles[node];
 
     for (int nei : adj[node]) {
         if (nei == parent) continue;
 
-        int sub = dfs(nei, node);
+        int sub = dfs(nei, node, roles);
 
-        if (sub == 1) {
-            result = (result * 1) % MOD;
+        if (sub > 0) {
+            result = (result * sub) % MOD;
         }
 
-        architects += sub;
+        sum += sub;
     }
 
-    return architects;
+    return sum;
 }
 
-int main() {
-    cin >> N;
+int calculate_valid_ways(int N, vector<int>& roles, vector<pair<int, int>>& connections) {
+    adj.assign(N, vector<int>());
+    result = 1;
 
-    role.resize(N);
-    for (int i = 0; i < N; i++) cin >> role[i];
-
-    adj.resize(N);
-
-    for (int i = 0; i < N - 1; i++) {
-        int u, v;
-        cin >> u >> v;
+    for (auto &edge : connections) {
+        int u = edge.first;
+        int v = edge.second;
         adj[u].push_back(v);
         adj[v].push_back(u);
     }
 
-    int total = 0;
-    for (int x : role) total += x;
+    int totalArchitects = 0;
+    for (int x : roles) totalArchitects += x;
 
-    if (total == 1) {
-        cout << 1 << endl;
-        return 0;
+    if (totalArchitects == 1) return 1;
+
+    dfs(0, -1, roles);
+
+    return result % MOD;
+}
+
+int main() {
+    int N;
+    cin >> N;
+
+    vector<int> roles(N);
+    for (int i = 0; i < N; ++i) {
+        cin >> roles[i];
     }
 
-    function<int(int,int)> solve = [&](int node, int parent) {
-        int sum = role[node];
+    vector<pair<int, int>> connections(N-1);
+    for (int i = 0; i < N - 1; ++i) {
+        cin >> connections[i].first >> connections[i].second;
+    }
 
-        for (int nei : adj[node]) {
-            if (nei == parent) continue;
-
-            int sub = solve(nei, node);
-
-            if (sub > 0) {
-                result = (result * sub) % MOD;
-            }
-
-            sum += sub;
-        }
-
-        return sum;
-    };
-
-    solve(0, -1);
-
-    cout << result % MOD << endl;
+    int result = calculate_valid_ways(N, roles, connections);
+    cout << result << endl;
 
     return 0;
 }
