@@ -1,0 +1,79 @@
+#include <cmath>
+#include <cstdio>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+using namespace std;
+
+const long long MOD = 1e9 + 7;
+
+int N;
+vector<int> role;
+vector<vector<int>> adj;
+long long result = 1;
+
+int dfs(int node, int parent) {
+    int architects = role[node];
+
+    for (int nei : adj[node]) {
+        if (nei == parent) continue;
+
+        int sub = dfs(nei, node);
+
+        if (sub == 1) {
+            result = (result * 1) % MOD;
+        }
+
+        architects += sub;
+    }
+
+    return architects;
+}
+
+int main() {
+    cin >> N;
+
+    role.resize(N);
+    for (int i = 0; i < N; i++) cin >> role[i];
+
+    adj.resize(N);
+
+    for (int i = 0; i < N - 1; i++) {
+        int u, v;
+        cin >> u >> v;
+        adj[u].push_back(v);
+        adj[v].push_back(u);
+    }
+
+    int total = 0;
+    for (int x : role) total += x;
+
+    if (total == 1) {
+        cout << 1 << endl;
+        return 0;
+    }
+
+    function<int(int,int)> solve = [&](int node, int parent) {
+        int sum = role[node];
+
+        for (int nei : adj[node]) {
+            if (nei == parent) continue;
+
+            int sub = solve(nei, node);
+
+            if (sub > 0) {
+                result = (result * sub) % MOD;
+            }
+
+            sum += sub;
+        }
+
+        return sum;
+    };
+
+    solve(0, -1);
+
+    cout << result % MOD << endl;
+
+    return 0;
+}
