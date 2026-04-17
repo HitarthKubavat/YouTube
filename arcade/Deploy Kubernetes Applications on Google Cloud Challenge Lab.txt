@@ -1,11 +1,12 @@
-
+# Initialize lab environment script
 source <(gsutil cat gs://spls/gsp318/script.sh)
+
+# Download and extract source code
 gsutil cp gs://spls/gsp318/valkyrie-app.tgz .
 tar -xzf valkyrie-app.tgz
 cd valkyrie-app
 
-------------------------------------------------------------------
-
+# Create the Dockerfile
 cat > Dockerfile <<EOF
 FROM golang:1.10
 WORKDIR /go/src/app
@@ -14,22 +15,40 @@ RUN go install -v
 ENTRYPOINT ["app","-single=true","-port=8080"]
 EOF
 
-------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
 
+
+# Build the image
 docker build -t [IMAGE_NAME]:[TAG_NAME] .
+
+# Run the image in the background for testing
 docker run -p 8080:8080 [IMAGE_NAME]:[TAG_NAME] &
 
-------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
 
+# Create the Artifact Registry repository
+gcloud artifacts repositories create [REPOSITORY_NAME] \
+    --repository-format=docker \
+    --location=[REGION] \
+    --description="Docker repository"
+
+# Authenticate Docker to the regional endpoint
 gcloud auth configure-docker [REGION]-docker.pkg.dev
-docker tag [IMAGE_NAME]:[TAG_NAME] [REGION]-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG_NAME]
-docker push [REGION]-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG_NAME]
 
-------------------------------------------------------------------
+# Tag the image for the Artifact Registry
+docker tag [IMAGE_NAME]:[TAG_NAME] [REGION]-docker.pkg.dev/\$GOOGLE_CLOUD_PROJECT/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG_NAME]
 
-gcloud container clusters get-credentials valkyrie-dev --zone [ZONE]
+# Push the image to the repository
+docker push [REGION]-docker.pkg.dev/\$GOOGLE_CLOUD_PROJECT/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG_NAME]
 
-------------------------------------------------------------------
+-------------------------------------------------------------------------------------------
 
+# Get credentials for your cluster
+gcloud container clusters get-credentials [CLUSTER_NAME] --zone [ZONE]
+
+# Replace the placeholder in the deployment file with the full image path
+sed -i "s|IMAGE_HERE|[REGION]-docker.pkg.dev/\$GOOGLE_CLOUD_PROJECT/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG_NAME]|g" k8s/deployment.yaml
+
+# Deploy the application and service
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
