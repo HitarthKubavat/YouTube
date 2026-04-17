@@ -1,0 +1,30 @@
+gcloud container clusters create echo-cluster --num-nodes=2 --machine-type=e2-standard-2 --zone=[ZONE]
+
+------------------------------------------------------------------
+
+gcloud container clusters get-credentials echo-cluster --zone=[ZONE]
+
+------------------------------------------------------------------
+
+gsutil cp gs://$GOOGLE_CLOUD_PROJECT/echo-web.tar.gz .
+tar -xvzf echo-web.tar.gz
+
+------------------------------------------------------------------
+
+docker build -t gcr.io/$GOOGLE_CLOUD_PROJECT/echo-app:v1 .
+
+------------------------------------------------------------------
+
+docker push gcr.io/$GOOGLE_CLOUD_PROJECT/echo-app:v1
+
+------------------------------------------------------------------
+
+kubectl create deployment echo-web --image=gcr.io/$GOOGLE_CLOUD_PROJECT/echo-app:v1
+
+------------------------------------------------------------------
+
+kubectl expose deployment echo-web --type=LoadBalancer --port=80 --target-port=8000
+
+------------------------------------------------------------------
+
+kubectl get service echo-web

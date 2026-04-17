@@ -1,0 +1,35 @@
+
+source <(gsutil cat gs://spls/gsp318/script.sh)
+gsutil cp gs://spls/gsp318/valkyrie-app.tgz .
+tar -xzf valkyrie-app.tgz
+cd valkyrie-app
+
+------------------------------------------------------------------
+
+cat > Dockerfile <<EOF
+FROM golang:1.10
+WORKDIR /go/src/app
+COPY source .
+RUN go install -v
+ENTRYPOINT ["app","-single=true","-port=8080"]
+EOF
+
+------------------------------------------------------------------
+
+docker build -t [IMAGE_NAME]:[TAG_NAME] .
+docker run -p 8080:8080 [IMAGE_NAME]:[TAG_NAME] &
+
+------------------------------------------------------------------
+
+gcloud auth configure-docker [REGION]-docker.pkg.dev
+docker tag [IMAGE_NAME]:[TAG_NAME] [REGION]-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG_NAME]
+docker push [REGION]-docker.pkg.dev/$GOOGLE_CLOUD_PROJECT/[REPOSITORY_NAME]/[IMAGE_NAME]:[TAG_NAME]
+
+------------------------------------------------------------------
+
+gcloud container clusters get-credentials valkyrie-dev --zone [ZONE]
+
+------------------------------------------------------------------
+
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
