@@ -1,0 +1,33 @@
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <algorithm>
+
+using namespace std;
+
+struct RefundRequest {
+    int refund;
+    int priority;
+    int timestamp;
+};
+bool compareRequests(const RefundRequest &a, const RefundRequest &b) {
+    if (a.priority != b.priority) {
+        return a.priority > b.priority;
+    }
+    return a.refund > b.refund;
+}
+
+pair<long long, long long> calculateMaximumPriorityAndRefund(int N, int K, vector<RefundRequest> &requests) {
+
+    sort(requests.begin(), requests.end(), compareRequests);
+
+    long long totalPriority = 0;
+    long long totalRefund = 0;
+
+    for (int i = 0; i < K; ++i) {
+        totalPriority += requests[i].priority;
+        totalRefund += requests[i].refund;
+    }
+
+    return make_pair(totalPriority, totalRefund);
+}
