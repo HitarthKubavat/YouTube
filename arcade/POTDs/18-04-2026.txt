@@ -1,0 +1,43 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <cmath>
+
+using namespace std;
+
+struct Shipment {
+    int pickup;
+    int delivery;
+    int reward;
+    int totalDistance;
+};
+
+bool compareShipments(const Shipment& a, const Shipment& b) {
+    return a.reward > b.reward;
+}
+
+int calculateMaxReward(int numTrucks, int numShipments, vector<int>& truckLimits, vector<Shipment>& shipments) {
+    for (int i = 0; i < numShipments; ++i) {
+        shipments[i].totalDistance = shipments[i].pickup + 
+                                     abs(shipments[i].delivery - shipments[i].pickup) + 
+                                     shipments[i].delivery;
+    }
+
+    sort(shipments.begin(), shipments.end(), compareShipments);
+    sort(truckLimits.begin(), truckLimits.end());
+
+    vector<bool> truckUsed(numTrucks, false);
+    int totalReward = 0;
+
+    for (int i = 0; i < numShipments; ++i) {
+        for (int j = 0; j < numTrucks; ++j) {
+            if (!truckUsed[j] && truckLimits[j] >= shipments[i].totalDistance) {
+                truckUsed[j] = true;
+                totalReward += shipments[i].reward;
+                break;
+            }
+        }
+    }
+
+    return totalReward;
+}
