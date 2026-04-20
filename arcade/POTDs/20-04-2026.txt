@@ -1,0 +1,96 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+
+const int INF = 1e9;
+
+vector<vector<int>> get_distances(int r, int c, int n, int m, const vector<vector<char>>& grid) {
+    vector<vector<int>> dist(n, vector<int>(m, INF));
+    queue<pair<int, int>> q;
+    
+    dist[r][c] = 0;
+    q.push({r, c});
+    
+    int dr[] = {-1, 1, 0, 0};
+    int dc[] = {0, 0, -1, 1};
+    
+    while (!q.empty()) {
+        pair<int, int> curr = q.front();
+        q.pop();
+        
+        for (int i = 0; i < 4; i++) {
+            int nr = curr.first + dr[i];
+            int nc = curr.second + dc[i];
+            
+            if (nr >= 0 && nr < n && nc >= 0 && nc < m && grid[nr][nc] != '#' && dist[nr][nc] == INF) {
+                dist[nr][nc] = dist[curr.first][curr.second] + 1;
+                q.push({nr, nc});
+            }
+        }
+    }
+    return dist;
+}
+
+int rescue_turtles(vector<vector<char>> &grid, int sx, int sy) {
+    int n = grid.size();
+    int m = grid[0].size();
+    
+    struct Point { int r, c; };
+    vector<Point> targets;
+    targets.push_back({sx, sy});
+    
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (grid[i][j] == 'T') targets.push_back({i, j});
+        }
+    }
+    
+    int num_points = targets.size();
+    int num_turtles = num_points - 1;
+    
+    if (num_turtles == 0) return 0;
+
+    vector<vector<int>> adj(num_points, vector<int>(num_points, INF));
+    for (int i = 0; i < num_points; i++) {
+        vector<vector<int>> d = get_distances(targets[i].r, targets[i].c, n, m, grid);
+        for (int j = 0; j < num_points; j++) {
+            adj[i][j] = d[targets[j].r][targets[j].c];
+        }
+    }
+
+    int max_mask = (1 << num_turtles);
+    vector<vector<int>> dp(max_mask, vector<int>(num_turtles, INF));
+
+    for (int i = 0; i < num_turtles; i++) {
+        if (adj[0][i + 1] != INF) {
+            dp[1 << i][i] = adj[0][i + 1];
+        }
+    }
+
+    for (int mask = 1; mask < max_mask; mask++) {
+        for (int i = 0; i < num_turtles; i++) {
+            if (dp[mask][i] == INF) continue;
+            
+            for (int j = 0; j < num_turtles; j++) {
+                if (!(mask & (1 << j))) 
+                {
+                    int next_mask = mask | (1 << j);
+                    if (adj[i + 1][j + 1] != INF) {
+                        dp[next_mask][j] = min(dp[next_mask][j], dp[mask][i] + adj[i + 1][j + 1]);
+                    }
+                }
+            }
+        }
+    }
+
+    int min_steps = INF;
+    for (int i = 0; i < num_turtles; i++) {
+        min_steps = min(min_steps, dp[max_mask - 1][i]);
+    }
+
+    return (min_steps >= INF) ? -1 : min_steps;
+}
