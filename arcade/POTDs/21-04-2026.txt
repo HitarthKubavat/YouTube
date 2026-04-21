@@ -1,0 +1,25 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+int calculateMaxFun(int N, int B, std::vector<int>& price, std::vector<int>& stock, std::vector<int>& fun) {
+    std::vector<int> dp(B + 1, 0);
+
+    for (int i = 0; i < N; i++) {
+
+        for (int j = B; j >= 0; j--) {
+            for (int k = 1; k <= stock[i]; k++) {
+                int current_cost = k * price[i];
+                int current_fun = k * fun[i];
+                
+                if (j >= current_cost) {
+                    dp[j] = std::max(dp[j], dp[j - current_cost] + current_fun);
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+
+    return dp[B];
+}
