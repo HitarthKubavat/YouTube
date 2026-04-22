@@ -1,0 +1,49 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+bool is_valid(vector<vector<int>>& matrix, int row, int col, int num, int N) {
+    for (int i = 0; i < N; i++) {
+        if (matrix[row][i] == num || matrix[i][col] == num) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool solve(vector<vector<int>>& matrix, int N, int row, int col) {
+    if (row == N) return true;
+
+    if (col == N) return solve(matrix, N, row + 1, 0);
+
+    if (matrix[row][col] != 0) return solve(matrix, N, row, col + 1);
+
+    for (int num = 1; num <= N; num++) {
+        if (is_valid(matrix, row, col, num, N)) {
+            matrix[row][col] = num;
+            if (solve(matrix, N, row, col + 1)) return true;
+            matrix[row][col] = 0;
+        }
+    }
+    return false;
+}
+
+vector<vector<int>> restore_matrix(vector<vector<int>>& matrix, int N) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            if (matrix[i][j] != 0) {
+                int temp = matrix[i][j];
+                matrix[i][j] = 0;
+                if (!is_valid(matrix, i, j, temp, N)) return {}; 
+                matrix[i][j] = temp;
+            }
+        }
+    }
+
+    if (solve(matrix, N, 0, 0)) {
+        return matrix;
+    } else {
+        return {}; 
+    }
+}
