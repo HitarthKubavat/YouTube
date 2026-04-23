@@ -1,0 +1,45 @@
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <algorithm>
+
+int max_popularity(int N, int M, int T, const std::vector<int>& popularity_scores, const std::vector<int>& visit_times, const std::vector<std::tuple<int, int, int>>& roads) {
+    
+    std::vector<std::vector<std::pair<int, int>>> adj(N);
+    for (const auto& road : roads) {
+        int u, v, w;
+        std::tie(u, v, w) = road;
+        adj[u - 1].push_back({v - 1, w});
+        adj[v - 1].push_back({u - 1, w});
+    }
+
+    std::vector<std::vector<int>> dp(T + 1, std::vector<int>(N, -1));
+
+    if (visit_times[0] <= T) {
+        dp[visit_times[0]][0] = popularity_scores[0];
+    } else {
+        return -1;
+    }
+
+    int max_pop = -1;
+    for (int t = 0; t <= T; ++t) {
+        for (int u = 0; u < N; ++u) {
+            if (dp[t][u] == -1) continue;
+            if (u == N - 1) {
+                max_pop = std::max(max_pop, dp[t][u]);
+            }
+
+            for (auto& edge : adj[u]) {
+                int v = edge.first;
+                int travel_w = edge.second;
+                int next_t = t + travel_w + visit_times[v];
+
+                if (next_t <= T) {
+                    dp[next_t][v] = std::max(dp[next_t][v], dp[t][u] + popularity_scores[v]);
+                }
+            }
+        }
+    }
+
+    return max_pop;
+}
