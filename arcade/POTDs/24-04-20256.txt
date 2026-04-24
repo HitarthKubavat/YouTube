@@ -1,0 +1,35 @@
+#include <iostream>
+#include <vector>
+#include <string>
+
+bool is_match(const std::string& pattern, const std::string& id) {
+    if (pattern.length() != id.length()) {
+        return false;
+    }
+    for (size_t i = 0; i < pattern.length(); ++i) {
+        if (pattern[i] != '*' && pattern[i] != id[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int count_suspicious_transactions(const std::vector<std::string>& suspicious_ids, const std::vector<std::string>& transaction_patterns) {
+    int suspicious_count = 0;
+    for (const std::string& pattern : transaction_patterns) {
+        bool found_match = false;
+    
+        for (const std::string& id : suspicious_ids) {
+            if (is_match(pattern, id)) {
+                found_match = true;
+                break;
+            }
+        }
+
+        if (found_match) {
+            suspicious_count++;
+        }
+    }
+
+    return suspicious_count;
+}
