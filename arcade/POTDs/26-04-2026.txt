@@ -1,0 +1,61 @@
+#include <iostream>
+#include <vector>
+#include <tuple>
+#include <cstring>
+
+using namespace std;
+
+long long memo[10005][2];
+bool calculating[10005][2];
+
+long long solve(int u, int parity, int target, const vector<vector<pair<int, int>>>& adj) {
+    if (u == target) {
+        return (parity == 0 ? 1 : 0);
+    }
+
+    if (memo[u][parity] != -1) {
+        return memo[u][parity];
+    }
+
+    long long count = 0;
+    for (auto& edge : adj[u]) {
+        int v = edge.first;
+        int weight = edge.second;
+
+        int next_parity = (parity + (abs(weight) % 2)) % 2;
+
+        count += solve(v, next_parity, target, adj);
+    }
+
+    return memo[u][parity] = count;
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(NULL);
+
+    int N, M;
+    if (!(cin >> N >> M)) return 0;
+
+    vector<vector<pair<int, int>>> adj(N + 1);
+    for (int i = 0; i < M; i++) {
+        int u, v, w;
+        cin >> u >> v >> w;
+        adj[u].push_back({v, w});
+    }
+
+    int start_node, target_node;
+    cin >> start_node >> target_node;
+
+    memset(memo, -1, sizeof(memo));
+
+    long long result = solve(start_node, 0, target_node, adj);
+
+    if (result == 0) {
+        cout << -1 << endl;
+    } else {
+        cout << result << endl;
+    }
+
+    return 0;
+}
