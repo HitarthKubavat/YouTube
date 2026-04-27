@@ -1,0 +1,42 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+int maxDistance(const vector<int>& arr) {
+    int n = arr.size();
+    if (n == 0) return -1;
+
+    vector<int> first_pos(100001, -1);
+    vector<int> last_pos(100001, -1);
+    bool found_duplicate = false;
+
+    for (int i = 0; i < n; ++i) {
+        int val = arr[i];
+        if (first_pos[val] == -1) {
+            first_pos[val] = i;
+        } else {
+            found_duplicate = true;
+        }
+        last_pos[val] = i;
+    }
+
+    if (!found_duplicate) return 0;
+
+    int max_dist = 0;
+    for (int v = 1; v <= 100000; ++v) {
+        if (first_pos[v] != -1) {
+            int first = first_pos[v];
+            int last = last_pos[v];
+            
+            int d1 = last - first;
+            int d2 = last;
+            int d3 = (n - 1) - first;
+            
+            max_dist = max({max_dist, d1, d2, d3});
+        }
+    }
+
+    return max_dist;
+}
