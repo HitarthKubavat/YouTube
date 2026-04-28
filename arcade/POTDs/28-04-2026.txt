@@ -1,0 +1,44 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <queue>
+
+using namespace std;
+
+void turn_off_connected_group(int start_r, int start_c, int n, int m, vector<string>& grid) {
+    queue<pair<int, int>> q;
+    q.push({start_r, start_c});
+    grid[start_r][start_c] = '0'; 
+    
+    int dr[] = {-1, 1, 0, 0};
+    int dc[] = {0, 0, -1, 1};
+
+    while (!q.empty()) {
+        pair<int, int> curr = q.front();
+        q.pop();
+
+        for (int i = 0; i < 4; i++) {
+            int nr = curr.first + dr[i];
+            int nc = curr.second + dc[i];
+            if (nr >= 0 && nr < n && nc >= 0 && nc < m && grid[nr][nc] == '1') {
+                grid[nr][nc] = '0'; // Turn it OFF
+                q.push({nr, nc});
+            }
+        }
+    }
+}
+
+int min_operations_to_turn_off(int n, int m, vector<string>& grid) {
+    int operations = 0;
+
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < m; j++) {
+            if (grid[i][j] == '1') {
+                operations++;
+                turn_off_connected_group(i, j, n, m, grid);
+            }
+        }
+    }
+
+    return operations;
+}
